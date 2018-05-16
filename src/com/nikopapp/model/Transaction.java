@@ -3,9 +3,9 @@ package com.nikopapp.model;
 import java.time.LocalDate;
 
 public class Transaction {
-    private LocalDate date;
-    private String description;
-    private Double amount;
+    private final LocalDate date;
+    private final String description;
+    private final Double amount;
 
     public Transaction(LocalDate date, String description, Double amount) {
         this.date = date;
@@ -20,5 +20,9 @@ public class Transaction {
                 ", description='" + description + '\'' +
                 ", amount=" + amount +
                 '}';
+    }
+
+    public String getDescription() {
+        return description;
     }
 }
