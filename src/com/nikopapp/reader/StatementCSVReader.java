@@ -10,16 +10,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class StatementCSVReader {
 
     public static List<Transaction> getTransactions(String path, StatementParser parser) {
-        return readFile(path).stream()
-                .map(parser::getTransaction)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return parser.getTransactions(readFile(path));
     }
 
     private static List<String> readFile(String pathStr) {
