@@ -17,6 +17,9 @@ public class StatementCSVReader {
         return parser.getTransactions(readFile(path));
     }
 
+    public static List<Transaction> getTransactions(Path path, StatementParser parser) {
+        return parser.getTransactions(readFile(path.toString()));
+    }
     private static List<String> readFile(String pathStr) {
         List<String> lines = new ArrayList<>();
         Path path = Paths.get(pathStr);

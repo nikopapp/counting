@@ -12,44 +12,64 @@ import java.util.List;
 
 public class HtmlParser implements StatementParser {
     public static final String MORE_THAN_ONE_ELEMENT_ERROR = "The element list for %s has more than one item";
+    public static final String EMPTY_STRING_ELEMENT_ERROR = "No text in node for %s";
 
     @Override
     public List<Transaction> getTransactions(List<String> lines) {
         List<Transaction> transactions = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        lines.forEach(line -> {
-            sb.append(line);
-        });
+        lines.forEach(sb::append);
         Elements elements = Jsoup.parse(sb.toString()).select("table.gridxRowTable");
-// TODO  Parse Html
         for (Element e : elements) {
             Elements row = e.getElementsByTag("tr");
             if (row.size() > 1) throw new IllegalArgumentException("The element list has more than one rows");
             Elements dateNode = row.select("td.date");
             Elements payee = row.select("td.payee");
             Elements amount = row.select("td.amount");
-            transactions.add(new Transaction(parseDate(dateNode), payee.toString(), parseDouble(amount)));
-            System.out.println(row);
+            try {
+                LocalDate dateValue = parseDate(dateNode);
+                Double amountValue = parseDouble(amount);
+                if (dateValue != null && amountValue != null) {
+                    transactions.add(new Transaction(dateValue, parseDescription(payee), amountValue));
+                }
+            } catch (Exception ex) {
+                System.out.println(String.format("%s\n row%s", ex.getMessage(), row));
+            }
         }
         System.out.println(elements.size());
         return transactions;
     }
 
-    private LocalDate parseDate(Elements dateNode) {
-        if (dateNode.size() > 1) {
-            throw new IllegalArgumentException(String.format(MORE_THAN_ONE_ELEMENT_ERROR, "date"));
+    private String parseDescription(Elements payee) {
+        checkSize(payee, "[description]");
+        return payee.text().replace("Description", "");
+
+    }
+
+    private void checkSize(Elements elements, String name) {
+        if (elements.text().trim().isEmpty()) {
+            throw new IllegalArgumentException(String.format(EMPTY_STRING_ELEMENT_ERROR, name));
         }
+        if (elements.size() > 1) {
+            throw new IllegalArgumentException(String.format(MORE_THAN_ONE_ELEMENT_ERROR, name));
+        }
+        if (elements.size() < 1) {
+            throw new IllegalArgumentException(String.format("The %s element list is empty", name));
+        }
+
+    }
+
+    private LocalDate parseDate(Elements dateNode) {
+        checkSize(dateNode, "[date]");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yy");
         return LocalDate.parse(dateNode.text().replace("Date", ""), formatter);
     }
 
-    private double parseDouble(Elements amount) {
-        if (amount.size() > 1) {
-            throw new IllegalArgumentException(String.format(MORE_THAN_ONE_ELEMENT_ERROR, "amount"));
-        }
+    private Double parseDouble(Elements amount) {
+        checkSize(amount, "[amount]");
         String amountString = amount.text()
                 .replace("Amount", "")
-                .replace(",","");
+                .replace(",", "");
         return Double.parseDouble(amountString);
     }
 }
