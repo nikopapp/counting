@@ -25,4 +25,12 @@ public class Transaction {
     public String getDescription() {
         return description;
     }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
 }

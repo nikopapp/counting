@@ -2,6 +2,7 @@ package com.nikopapp;
 
 import com.nikopapp.model.Transaction;
 import com.nikopapp.reader.*;
+import com.nikopapp.writer.CsvWriter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,30 +13,38 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class HouseMateAnalyser {
+public class WriteHtmlToCSV {
     private final StatementParser htmlParser;
-    private final StatementParser miDataParser;
-    private final StatementParser normalParser;
+    private final CsvWriter csvWriter;
 
     private static final String ROOT_PATH = "/home/papakos/Desktop/counting/resources/";
-    private static final String JOINT_FOLDER_MIDATA = "joint/midata1090.csv";
-    private static final String JOINT_FOLDER = "joint/TransHist.csv";
-    private static final String SOLO_FOLDER_MIDATA = "solo/midata1090.csv";
     private static final String SOLO_FOLDER_HTML = ROOT_PATH + "solo/html/";
     private static final String JOINT_FOLDER_HTML = ROOT_PATH + "joint/html/";
-    private static final String APRIL_18 = "apr18.html";
-    private static final String SOLO_FOLDER = "solo/TransHist.csv";
 
-    public HouseMateAnalyser() {
-        miDataParser = new MiDataParser();
-        normalParser = new NormalParser();
+    public WriteHtmlToCSV() {
         htmlParser = new HtmlParser();
+        csvWriter = new CsvWriter();
     }
 
     public static void main(String[] args) throws IOException {
-        HouseMateAnalyser app = new HouseMateAnalyser();
-        app.getTransactionsHtml(filterForSimone())
-                .forEach(System.out::println);
+        WriteHtmlToCSV app = new WriteHtmlToCSV();
+        List<Transaction> transactions = app.getTransactionsHtml();
+        app.writeFile(transactions, "/home/papakos/Desktop/everything.csv");
+
+    }
+
+    private void writeFile(List<Transaction> transactions, String path) throws IOException {
+        csvWriter.writeFile(transactions, path);
+    }
+
+    private List<Transaction> getTransactionsHtml() throws IOException {
+        Stream<Path> soloStream = Files.walk(Paths.get(SOLO_FOLDER_HTML));
+        Stream<Path> jointStream = Files.walk(Paths.get(JOINT_FOLDER_HTML));
+
+        return Stream.concat(soloStream, jointStream)
+                .filter(p -> p.toString().endsWith(".html"))
+                .flatMap(p -> StatementCSVReader.getTransactions(p, htmlParser).stream())
+                .collect(Collectors.toList());
 
     }
 
@@ -52,14 +61,6 @@ public class HouseMateAnalyser {
 
     private static Predicate<Transaction> filterForName(String name) {
         return t -> t.getDescription().toLowerCase().contains(name);
-    }
-
-    private static Predicate<Transaction> filterForSimone() {
-        return filterForName("saccomandi");
-    }
-
-    private static Predicate<Transaction> filterForMaria() {
-        return filterForName("rodriguez");
     }
 
 }

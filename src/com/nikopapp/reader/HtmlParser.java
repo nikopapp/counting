@@ -21,10 +21,10 @@ public class HtmlParser implements StatementParser {
         lines.forEach(sb::append);
         Elements elements = Jsoup.parse(sb.toString()).select("table.gridxRowTable");
         for (Element e : elements) {
-            if (e.getElementsContainingText("Closing balance this month").size()>0) {
+            if (e.getElementsContainingText("Closing balance this month").size() > 0) {
                 continue;
             }
-            if (e.getElementsContainingText("Opening balance this month").size()>0) {
+            if (e.getElementsContainingText("Opening balance this month").size() > 0) {
                 continue;
             }
             Elements row = e.getElementsByTag("tr");
@@ -42,7 +42,9 @@ public class HtmlParser implements StatementParser {
                 System.out.println(String.format("%s\n row%s", ex.getMessage(), row));
             }
         }
-        System.out.println(elements.size());
+        if (elements.size() - 2 != transactions.size() && !elements.isEmpty()) {
+            throw new IllegalArgumentException("Some elements of the html could not be parsed correctly");
+        }
         return transactions;
     }
 
