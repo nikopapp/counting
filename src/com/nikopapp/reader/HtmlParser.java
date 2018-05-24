@@ -21,6 +21,12 @@ public class HtmlParser implements StatementParser {
         lines.forEach(sb::append);
         Elements elements = Jsoup.parse(sb.toString()).select("table.gridxRowTable");
         for (Element e : elements) {
+            if (e.getElementsContainingText("Closing balance this month").size()>0) {
+                continue;
+            }
+            if (e.getElementsContainingText("Opening balance this month").size()>0) {
+                continue;
+            }
             Elements row = e.getElementsByTag("tr");
             if (row.size() > 1) throw new IllegalArgumentException("The element list has more than one rows");
             Elements dateNode = row.select("td.date");

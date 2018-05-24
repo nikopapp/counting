@@ -44,7 +44,7 @@ public class HouseMateAnalyser {
 
     public static void main(String[] args) throws IOException {
         HouseMateAnalyser app = new HouseMateAnalyser();
-        app.getTransactionsHtml(filterForName("saccomandi"))
+        app.getTransactionsHtml(filterForName("perez"))
                 .forEach(System.out::println);
 //        app.filterForMaria(app.soloTransactions).forEach(System.out::println);
 //        app.filterForSimone(app.soloTransactions).forEach(System.out::println);
